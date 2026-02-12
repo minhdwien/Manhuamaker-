@@ -1,0 +1,7 @@
+{
+  "name": "ManhuaMaker AI",
+  "description": "Ứng dụng tạo truyện tranh Manhua với khả năng quản lý nhân vật và tạo hình chi tiết.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
