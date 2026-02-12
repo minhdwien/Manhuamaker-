@@ -1,12 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 import { Character, CharacterStats, CharacterAppearance } from "../types";
 
-const API_KEY = process.env.API_KEY || '';
+// Helper to get the best available API Key
+const getApiKey = (): string => {
+  // 1. Check for user-provided key in LocalStorage
+  const customKey = localStorage.getItem('gemini_api_key');
+  if (customKey && customKey.trim().length > 0) {
+    return customKey.trim();
+  }
+  // 2. Fallback to Environment Variable
+  return process.env.API_KEY || '';
+};
 
-// Initialize client securely
+// Initialize client securely on every request to ensure latest key is used
 const getClient = () => {
-  if (!API_KEY) throw new Error("API Key chưa được cấu hình.");
-  return new GoogleGenAI({ apiKey: API_KEY });
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key chưa được cấu hình. Vui lòng vào mục 'Lưu Trữ' để nhập Key.");
+  return new GoogleGenAI({ apiKey: apiKey });
 };
 
 export const generateCharacterImage = async (

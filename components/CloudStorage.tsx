@@ -22,6 +22,10 @@ const CloudStorage: React.FC<Props> = ({ characters, panels, onRestore }) => {
   // Local Storage Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // API Key State
+  const [customApiKey, setCustomApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+
   // Google Drive State
   const [clientId, setClientId] = useState(() => localStorage.getItem('gdrive_client_id') || '');
   const [tokenClient, setTokenClient] = useState<any>(null);
@@ -29,6 +33,23 @@ const CloudStorage: React.FC<Props> = ({ characters, panels, onRestore }) => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [showGuide, setShowGuide] = useState(false);
+
+  // Load saved API Key on mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) setCustomApiKey(savedKey);
+  }, []);
+
+  // --- API KEY FUNCTIONS ---
+  const handleSaveApiKey = () => {
+    if (!customApiKey.trim()) {
+        localStorage.removeItem('gemini_api_key');
+        setStatus('Đã xóa Key cá nhân. Sử dụng Key mặc định của hệ thống.');
+    } else {
+        localStorage.setItem('gemini_api_key', customApiKey.trim());
+        setStatus('Đã lưu API Key cá nhân thành công!');
+    }
+  };
 
   // --- LOCAL STORAGE FUNCTIONS (OFFLINE) ---
 
@@ -212,11 +233,54 @@ const CloudStorage: React.FC<Props> = ({ characters, panels, onRestore }) => {
     <div className="p-4 pb-24 h-full overflow-y-auto no-scrollbar">
        <div className="flex items-center mb-6 sticky top-0 bg-background/95 backdrop-blur z-20 py-2">
          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-             Quản Lý Dữ Liệu
+             Cấu Hình & Lưu Trữ
          </h1>
        </div>
 
        <div className="space-y-8">
+
+          {/* API KEY CONFIGURATION */}
+          <div className="bg-gradient-to-br from-violet-900/40 to-purple-900/40 p-5 rounded-xl border border-violet-500/30 shadow-lg relative overflow-hidden">
+             <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                   <span>🔑</span> Kết Nối Tiên Giới (API Key)
+                </h3>
+                <span className="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded border border-violet-500/30">
+                  Quan trọng
+                </span>
+             </div>
+             
+             <p className="text-xs text-gray-300 mb-3">
+               Nhập Gemini API Key của riêng bạn để sử dụng tài nguyên cá nhân, tránh bị giới hạn khi dùng chung.
+             </p>
+
+             <div className="flex gap-2 mb-2">
+               <div className="relative flex-1">
+                 <input 
+                    type={showApiKey ? "text" : "password"}
+                    value={customApiKey}
+                    onChange={(e) => setCustomApiKey(e.target.value)}
+                    placeholder="Dán API Key của bạn vào đây..."
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-sm text-white focus:border-violet-500 outline-none pr-10"
+                 />
+                 <button 
+                   onClick={() => setShowApiKey(!showApiKey)}
+                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                 >
+                   {showApiKey ? '👁️' : '🔒'}
+                 </button>
+               </div>
+               <button 
+                 onClick={handleSaveApiKey}
+                 className="bg-violet-600 hover:bg-violet-500 text-white px-4 rounded-lg font-bold text-sm shadow-lg whitespace-nowrap"
+               >
+                 Lưu Key
+               </button>
+             </div>
+             <p className="text-[10px] text-gray-500">
+               *Key được lưu an toàn trên thiết bị này của bạn. Lấy Key tại <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-violet-400 hover:underline">aistudio.google.com</a>
+             </p>
+          </div>
           
           {/* LOCAL FILE STORAGE - PRIMARY OPTION */}
           <div className="bg-gray-800 p-5 rounded-xl border border-gray-600 shadow-lg relative overflow-hidden group">
@@ -274,7 +338,7 @@ const CloudStorage: React.FC<Props> = ({ characters, panels, onRestore }) => {
           <div className="bg-gray-900/50 p-5 rounded-xl border border-gray-800">
              <div className="flex justify-between items-start mb-2">
                  <h3 className="font-bold text-gray-400 text-sm flex items-center gap-2">
-                     <span>☁️</span> Google Drive (Cần Cấu Hình)
+                     <span>☁️</span> Google Drive (Backup Nâng Cao)
                  </h3>
                  <button 
                     onClick={() => setShowGuide(!showGuide)}
@@ -300,7 +364,7 @@ const CloudStorage: React.FC<Props> = ({ characters, panels, onRestore }) => {
                         type="text" 
                         value={clientId}
                         onChange={(e) => setClientId(e.target.value)}
-                        placeholder="Dán Client ID tại đây (ví dụ: 123...apps.googleusercontent.com)"
+                        placeholder="Dán Client ID tại đây..."
                         className="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-xs text-white focus:border-blue-500 outline-none"
                     />
                     <div className="flex gap-2">
